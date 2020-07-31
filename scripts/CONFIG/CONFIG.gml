@@ -21,23 +21,20 @@ Input.AddKey("MenuOpen", KEY.M);
 // Other configuration
 Input.SetConfiguration("GamerMode");
 
-Input.AddInstance("Up");
+Input.AddInstance("Up", 0.5);
 Input.AddInstance("Down");
 Input.AddInstance("Left");
 Input.AddInstance("Right");
-Input.AddInstance("Direction");
 
 Input.AddKey("Up", KEY.W);
 Input.AddKey("Down", KEY.S);
 Input.AddKey("Left", KEY.A);
-Input.AddKey("Right", KEY.ANY);
+Input.AddKey("Right", KEY.D);
 
-Input.AddKey("Up", KEY.EMPTY);
-Input.AddKey("Down", KEY.EMPTY);
-Input.AddKey("Left", KEY.EMPTY);
-
-
-Input.AddKey("Direction", KEY.DIRECTION_RIGHT_JOYSTICK);
+Input.AddKey("Up", KEY.LEFT_JOYSTICK_UP);
+Input.AddKey("Down", KEY.LEFT_JOYSTICK_DOWN);
+Input.AddKey("Left", KEY.LEFT_JOYSTICK_LEFT);
+Input.AddKey("Right", KEY.LEFT_JOYSTICK_RIGHT);
 
 // Save all the profiles
 Input.Save();

@@ -1,6 +1,6 @@
 #macro Input (GetInputManager())
 
-#macro JOYSTICK_THRESHOLD 0.5
+#macro ANALOGUE_THRESHOLD 0.1
 #macro LONG_PRESS_TIME 500
 #macro DOUBLE_TAP_TIME 300
 #macro REPEATED_TIME 300
@@ -32,21 +32,15 @@ enum KEY {
 	// GAMEPAD
 	FACE1, FACE2, FACE3, FACE4,
 	LEFT_SHOULDER, RIGHT_SHOULDER,
-	LEFT_TRIGGER, RIGHT_TRIGGER,
 	SELECT, START,
 	LEFT_JOYSTICK_CLICK, RIGHT_JOYSTICK_CLICK,
 	PAD_UP, PAD_DOWN, PAD_LEFT, PAD_RIGHT,
-	LEFT_JOYSTICK_UP, LEFT_JOYSTICK_DOWN, LEFT_JOYSTICK_LEFT, LEFT_JOYSTICK_RIGHT,
-	RIGHT_JOYSTICK_UP, RIGHT_JOYSTICK_DOWN, RIGHT_JOYSTICK_LEFT, RIGHT_JOYSTICK_RIGHT,
 	
 	// ANALOGUE
-	ANALOGUE_LEFT_TRIGGER, ANALOGUE_RIGHT_TRIGGER,
-	ANALOGUE_LEFT_JOYSTICK_VERTICAL, ANALOGUE_LEFT_JOYSTICK_HORIZONTAL, ANALOGUE_RIGHT_JOYSTICK_VERTICAL, ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL,
-	
-	// DIRECTIONAL
-	DIRECTION_LEFT_JOYSTICK, DIRECTION_RIGHT_JOYSTICK,
-	DIRECTION_PAD, DIRECTION_FACES,
-	DIRECTION_WASD, DIRECTION_ARROWS, DIRECTION_NUMPAD, DIRECTION_IJKL
+	LEFT_TRIGGER, RIGHT_TRIGGER,
+	LEFT_JOYSTICK_DOWN, LEFT_JOYSTICK_RIGHT, RIGHT_JOYSTICK_DOWN, RIGHT_JOYSTICK_RIGHT,
+	LEFT_JOYSTICK_UP, LEFT_JOYSTICK_LEFT, RIGHT_JOYSTICK_UP, RIGHT_JOYSTICK_LEFT
+
 }
 
 function GetInputManager() {
@@ -121,10 +115,10 @@ function GetInputManager() {
 				currentConfig = config;	
 			},
 		
-			AddInstance: function(input, long_press_time, double_tap_time, repeated_time) {				
+			AddInstance: function(input, analogue_threshold, long_press_time, double_tap_time, repeated_time) {				
 				var config = GetConfiguration(currentConfig);
 				if ( config != -1 )
-					config.AddInstance(input, long_press_time, double_tap_time, repeated_time);
+					config.AddInstance(input, analogue_threshold, long_press_time, double_tap_time, repeated_time);
 			},
 			
 			AddKey: function(input, key, device) {
@@ -162,7 +156,6 @@ function GetInputManager() {
 				}
 				Print("---------------------------")
 			},
-			
 
 			Save: function() {
 				var file = file_text_open_write(FILE_NAME);
@@ -233,18 +226,13 @@ function GetInputManager() {
 			
 			GetCurrentKey: function(type) {
 				if (type == undefined) type = "DIGITAL";
-				var kCheck = KeyboardGetKeyDiscrete();
-				var kdCheck = KeyboardGetKeyDirectional();
-				var gCheck = GamepadGetKeyDiscrete();
-				var gaCheck = GamepadGetKeyAnalogue();
-				var gdCheck = GamepadGetKeyDirectional();
+				var kCheck = KeyboardGetKey();
+				var gCheck = GamepadGetKey();
 				var mCheck = MouseGetKey();
 				
-				if ( kCheck != -1 && type == "DIGITAL") return kCheck;
-				if ( kdCheck != -1 && type == "DIRECTIONAL") return kdCheck;
+				if ( kCheck != -1 ) return kCheck;
 				if ( gCheck != -1 && type == "DIGITAL") return gCheck;
 				if ( gaCheck != -1 && type == "ANALOGUE") return gaCheck;
-				if ( gdCheck != -1 && type == "DIRECTIONAL") return gdCheck;
 				if ( mCheck != -1 ) return mCheck;
 				
 				return -1;
@@ -349,22 +337,22 @@ function GetInputManager() {
 				return false;
 			},
 			
-			CheckAnalogue: function(input, config) {
+			CheckValue: function(input, config) {
 				if listening return 0;
 				config = ( config == undefined ) ? currentConfig : config;
 				var newConf = GetConfiguration(config);
-				if ( newConf != -1 ) return newConf.Check(input, "analogue");
+				if ( newConf != -1 ) return newConf.Check(input, "value");
 				
 				return 0;
 			},
 			
-			CheckDirection: function(input, config) {
-				if listening return [0,0];
+			CheckNormalized: function(input, config) {
+				if listening return 0;
 				config = ( config == undefined ) ? currentConfig : config;
 				var newConf = GetConfiguration(config);
-				if ( newConf != -1 ) return newConf.Check(input, "direction");
+				if ( newConf != -1 ) return newConf.Check(input, "normalized");
 				
-				return [0, 0];
+				return 0;
 			}
 		#endregion
 	}		
@@ -397,8 +385,8 @@ function InputConfiguration(name) constructor {
 				case "double": return inst.double; break;
 				case "repeated": return inst.repeated; break;
 				case "repeatedlong": return inst.repeatedLong; break;
-				case "analogue": return inst.value; break;
-				case "direction": return inst.dir; break;
+				case "value": return inst.value; break;
+				case "normalized": return inst.normalized; break;
 			}
 		}
 		
@@ -411,9 +399,9 @@ function InputConfiguration(name) constructor {
 		}	
 	}
 
-	static AddInstance = function(name, long_press_time, double_tap_time, repeated_time) {
+	static AddInstance = function(name, analogue_threshold, long_press_time, double_tap_time, repeated_time) {
 		if ( GetInstance(name) != -1 ) return -1;
-		self.instances[array_length(self.instances)] = new InputInstance(name, long_press_time, double_tap_time, repeated_time);
+		self.instances[array_length(self.instances)] = new InputInstance(name, analogue_threshold, long_press_time, double_tap_time, repeated_time);
 	}
 
 	static AddKey = function(input, key, device) {
@@ -462,10 +450,10 @@ function InputConfiguration(name) constructor {
 	}
 }
 
-function InputInstance(name, long_press_time, double_tap_time, repeated_time) constructor {
+function InputInstance(name, analogue_threshold, long_press_time, double_tap_time, repeated_time) constructor {
 	self.name = string_upper(name);
 	self.keys = [];
-	self.type = undefined;
+	self.analogue_threshold = ( analogue_threshold == undefined ) ? ANALOGUE_THRESHOLD : analogue_threshold;
 	self.long_press_time = ( long_press_time == undefined ) ? LONG_PRESS_TIME : long_press_time;
 	self.double_tap_time = ( double_tap_time == undefined ) ? DOUBLE_TAP_TIME : double_tap_time;
 	self.repeated_time = ( repeated_time == undefined ) ? REPEATED_TIME : repeated_time;
@@ -480,12 +468,8 @@ function InputInstance(name, long_press_time, double_tap_time, repeated_time) co
 	self.double = false;	
 	self.repeated = false;
 	self.repeatedLong = false;
-	
-	// ANALOGUE INPUTS
 	self.value = 0;
-	
-	// DIRECTIONAL INPUTS
-	self.dir = [0, 0];
+	self.normalized = 0;
 	
 	// Aux variables
 	self.last_press = 0;
@@ -494,36 +478,32 @@ function InputInstance(name, long_press_time, double_tap_time, repeated_time) co
 	self.long_repeated_last_press = 0;
 	
 	static Update = function() {
-		// SKIP THE INPUT
-		if ( array_length(self.keys) == 0 ) return;
+		// GET THE CURRENT STATE OF THE KEYS
+		var len = array_length(self.keys);
+		if ( !len ) return;
 		
-		if ( self.type == "DIGITAL" ) self.DigitalUpdate();
-		else if ( self.type == "ANALOGUE" ) self.AnalogueUpdate();
-		else if ( self.type == "DIRECTIONAL" ) self.DirectionalUpdate();
-		else {
-			// Different input states
-			self.hold = false;		
-			self.pressed = false;
-			self.released = false;	
-			self.long = false;
-			self.longPressed = false;
-			self.longReleased = false;
-			self.double = false;	
-			self.repeated = false;
-			self.repeatedLong = false;
-			
-			// ANALOGUE INPUTS
-			self.value = 0;
-			
-			// DIRECTIONAL INPUTS
-			self.dir = [0, 0];
+		self.value = 0;
+		
+		if ( len ) {
+			for (var i = 0; i < len; i++) {
+				var k = self.keys[i];
+				if ( k != KEY.EMPTY ) {
+					var newVal = k.Check();
+					if ( newVal > abs(self.value) ) self.value = newVal;
+				}
+			}
 		}
-	}
-	
-	static DigitalUpdate = function() {
+		
+		self.normalized = ( self.value - self.analogue_threshold ) / ( 1 - self.analogue_threshold )
+		
+		if ( self.value <= self.analogue_threshold ) {
+			self.value = 0;
+			self.normalized = 0;
+		}
+		
 		// REGULAR TAP			
 		var previous_state = self.hold;
-		self.hold = self.DigitalCheck();
+		self.hold = self.value > 0;
 			
 		self.pressed = ( self.hold && !previous_state )
 		self.released = ( !self.hold && previous_state )
@@ -589,52 +569,6 @@ function InputInstance(name, long_press_time, double_tap_time, repeated_time) co
 			}
 		}
 	}
-	
-	static AnalogueUpdate = function() {
-		var val = self.AnalogueCheck();
-		if ( val != -1 ) self.dir = val;
-	}
-	
-	static DirectionalUpdate = function() {
-		self.dir = self.DirectionalCheck();
-	}
-
-	static DigitalCheck = function() {		
-		var len = array_length(self.keys);
-		if ( len ) {
-			for (var i = 0; i < len; i++) {
-				var k = self.keys[i];
-				if k.key != KEY.EMPTY && k.Check() return true;
-			}
-		}		
-		return false;
-	};
-	
-	static AnalogueCheck = function() {
-		var len = array_length(self.keys);
-		var val = 0;
-		if ( len ) {
-			for (var i = 0; i < len; i++) {
-				var k = self.keys[i];
-				if ( k != KEY.EMPTY ) {
-					var newVal = k.Check();
-					Print(k.type)
-					if ( abs(newVal) > abs(val) ) val = newVal;
-				}
-			}
-		}
-		return val;
-	}
-	
-	static DirectionalCheck = function() {
-		if ( array_length(self.keys) ) {
-			var k = self.keys[0];
-			if ( k != KEY.EMPTY ) {
-				return k.Check();
-			}
-		}
-		return -1;
-	}
 
 	static AddKey = function(key, device) {
 		for (var i=0; i<array_length(self.keys); i++) {
@@ -642,13 +576,6 @@ function InputInstance(name, long_press_time, double_tap_time, repeated_time) co
 		}
 		
 		var newKey = new InputKey(key, device);
-		
-		if ( self.type == undefined ) {
-			self.type = newKey.type;
-		} else if ( self.type != newKey.type ) {
-			delete newKey;
-			return -1;
-		}
 		self.keys[array_length(self.keys)] = newKey;
 	};
 		
@@ -697,7 +624,6 @@ function InputKey(key, device) constructor {
 		self.keyCode = KeyTrueCode(self.key);
 		self.origin = undefined
 		self.Check = undefined;
-		self.type = KeyGetType(key);
 		
 		// GET INPUT ORIGIN
 		if ( self.key < KEY.A ) self.origin = "SPECIAL";
@@ -705,10 +631,10 @@ function InputKey(key, device) constructor {
 		else if ( self.key < KEY.LEFT_CLICK ) self.origin = "KEYBOARD_DIRECT";
 		else if ( self.key < KEY.WHEEL_UP ) self.origin = "MOUSE_BUTTON";
 		else if ( self.key < KEY.FACE1 ) self.origin = "MOUSE_WHEEL";
-		else if ( self.key < KEY.LEFT_JOYSTICK_UP ) self.origin = "GAMEPAD_BUTTON";
-		else if ( self.key < KEY.ANALOGUE_LEFT_TRIGGER ) self.origin = "GAMEPAD_STICK";
-		else if ( self.key < KEY.DIRECTION_LEFT_JOYSTICK ) self.origin = "ANALOGUE_INPUT";
-		else self.origin = "DIRECTIONAL_INPUT";
+		else if ( self.key < KEY.LEFT_TRIGGER ) self.origin = "GAMEPAD_BUTTON";
+		else if ( self.key < KEY.LEFT_JOYSTICK_DOWN ) self.origin = "TRIGGER";
+		else if ( self.key < KEY.LEFT_JOYSTICK_UP ) self.origin = "JOYSTICK_POSITIVE";
+		else self.origin = "JOYSTICK_NEGATIVE";
 		
 		// ASSIGN CALLBACK FUNCTIONS
 		switch(self.origin) {
@@ -730,46 +656,14 @@ function InputKey(key, device) constructor {
 			case "GAMEPAD_BUTTON":
 				self.Check = InputCallbackGamepadCheck;
 				break;
-			case "GAMEPAD_STICK":			
-				switch( self.key ) {
-					case KEY.LEFT_JOYSTICK_UP: self.Check = InputCallbackGamepadLeftJoystick_up; break;
-					case KEY.LEFT_JOYSTICK_DOWN: self.Check = InputCallbackGamepadLeftJoystick_down; break;
-					case KEY.LEFT_JOYSTICK_LEFT: self.Check = InputCallbackGamepadLeftJoystickLeft; break;
-					case KEY.LEFT_JOYSTICK_RIGHT: self.Check = InputCallbackGamepadLeftJoystickRight; break;
-				
-					case KEY.RIGHT_JOYSTICK_UP: self.Check = InputCallbackGamepadRightJoystick_up; break;
-					case KEY.RIGHT_JOYSTICK_DOWN: self.Check = InputCallbackGamepadRightJoystick_down; break;
-					case KEY.RIGHT_JOYSTICK_LEFT: self.Check = InputCallbackGamepadRightJoystickLeft; break;
-					case KEY.RIGHT_JOYSTICK_RIGHT: self.Check = InputCallbackGamepadRightJoystickRight; break;
-				}		
+			case "TRIGGER":
+				self.Check = InputCallbackGamepadTrigger;
 				break;
-			case "ANALOGUE_INPUT":	
-				switch( self.key ) {
-					case KEY.ANALOGUE_LEFT_TRIGGER:
-					case KEY.ANALOGUE_RIGHT_TRIGGER:
-						self.Check = InputCallbackGamepadTrigger; break;
-					case KEY.ANALOGUE_LEFT_JOYSTICK_HORIZONTAL:
-					case KEY.ANALOGUE_LEFT_JOYSTICK_VERTICAL:
-					case KEY.ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL:
-					case KEY.ANALOGUE_RIGHT_JOYSTICK_VERTICAL:
-						self.Check = InputCallbackGamepadJoystickAxis; break;
-				}
+			case "JOYSTICK_POSITIVE":
+				self.Check = InputCallbackGamepadJoystickPositive;
 				break;
-			case "DIRECTIONAL_INPUT":
-				switch( self.key ) {
-					case KEY.DIRECTION_LEFT_JOYSTICK:
-					case KEY.DIRECTION_RIGHT_JOYSTICK:
-						self.Check = InputCallbackDirectionJoystick; break;
-					case KEY.DIRECTION_PAD:
-					case KEY.DIRECTION_FACES:
-						self.Check = InputCallbackDirectionGamepad; break;
-					case KEY.DIRECTION_WASD:
-					case KEY.DIRECTION_ARROWS:
-					case KEY.DIRECTION_IJKL:
-					case KEY.DIRECTION_NUMPAD:
-						self.Check = InputCallbackDirectionKeyboard; break;
-				
-				}
+			case "JOYSTICK_NEGATIVE":
+				self.Check = InputCallbackGamepadJoystickNegative;
 				break;
 			default:
 				self.Check = InputCallbackDefault;
@@ -803,47 +697,13 @@ function InputKey(key, device) constructor {
 		static InputCallbackGamepadCheck = function() { return gamepad_button_check(self.device, self.keyCode); }
 	
 		// GAMEPAD_STICK
-		static InputCallbackGamepadLeftJoystick_up = function() { return gamepad_axis_value(self.device, gp_axislv) < -JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadLeftJoystick_down = function() { return gamepad_axis_value(self.device, gp_axislv) > JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadLeftJoystickLeft = function() { return gamepad_axis_value(self.device, gp_axislh) < -JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadLeftJoystickRight = function() { return gamepad_axis_value(self.device, gp_axislh) > JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadRightJoystick_up = function() { return gamepad_axis_value(self.device, gp_axisrv) < -JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadRightJoystick_down = function() { return gamepad_axis_value(self.device, gp_axisrv) > JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadRightJoystickLeft = function() { return gamepad_axis_value(self.device, gp_axisrh) < -JOYSTICK_THRESHOLD; }
-		static InputCallbackGamepadRightJoystickRight = function() { return gamepad_axis_value(self.device, gp_axisrh) > JOYSTICK_THRESHOLD; }	
-		
-		// ANALOGUE INPUTS
-		static InputCallbackGamepadJoystickAxis = function() { return gamepad_axis_value(self.device, self.keyCode); }
 		static InputCallbackGamepadTrigger = function() { return gamepad_button_value(self.device, self.keyCode); }
-		
-		// DIRECTIONAL INPUTS
-		static InputCallbackDirectionJoystick = function() {
-			var hval = gamepad_axis_value(self.device, self.keyCode[0]);
-			var vval = gamepad_axis_value(self.device, self.keyCode[1]);
-			if ( abs(hval) < JOYSTICK_THRESHOLD ) hval = 0;
-			if ( abs(vval) < JOYSTICK_THRESHOLD ) vval = 0;
-			return [hval, vval];
-		}
-		static InputCallbackDirectionKeyboard = function() {
-			var hval = keyboard_check(self.keyCode[0]) - keyboard_check(self.keyCode[1]);
-			var vval = keyboard_check(self.keyCode[2]) - keyboard_check(self.keyCode[3]);
-			return [hval, vval];
-		}
-		static InputCallbackDirectionGamepad = function() {
-			var hval = gamepad_button_check(self.device, self.keyCode[0]) - gamepad_button_check(self.device, self.keyCode[1])
-			var vval = gamepad_button_check(self.device, self.keyCode[2]) - gamepad_button_check(self.device, self.keyCode[3])
-			return [hval, vval];
-		}
+		static InputCallbackGamepadJoystickPositive = function() { return max(gamepad_axis_value(self.device, self.keyCode), 0); }
+		static InputCallbackGamepadJoystickNegative = function() { return abs(min(gamepad_axis_value(self.device, self.keyCode), 0)); }
 		
 	#endregion
 	
 	init(key, device);
-}
-
-function KeyGetType(key) {
-	if ( key < KEY.ANALOGUE_LEFT_TRIGGER ) return "DIGITAL";
-	else if ( key < KEY.DIRECTION_LEFT_JOYSTICK ) return "ANALOGUE";
-	else return "DIRECTIONAL";
 }
 
 function KeyTrueCode(key) {
@@ -952,8 +812,6 @@ function KeyTrueCode(key) {
 		case KEY.FACE4: realCode = gp_face4; break;
 		case KEY.LEFT_SHOULDER: realCode = gp_shoulderl; break;
 		case KEY.RIGHT_SHOULDER: realCode = gp_shoulderr; break;
-		case KEY.LEFT_TRIGGER: realCode = gp_shoulderlb; break;
-		case KEY.RIGHT_TRIGGER: realCode = gp_shoulderrb; break;
 		case KEY.SELECT: realCode = gp_select; break;
 		case KEY.START: realCode = gp_start; break;
 		case KEY.LEFT_JOYSTICK_CLICK: realCode = gp_stickl; break;
@@ -964,22 +822,17 @@ function KeyTrueCode(key) {
 		case KEY.PAD_RIGHT: realCode = gp_padr; break;
 		
 		// ANALOGUE INPUT
-		case KEY.ANALOGUE_LEFT_TRIGGER: realCode = gp_shoulderlb; break;
-		case KEY.ANALOGUE_RIGHT_TRIGGER: realCode = gp_shoulderrb; break;
-		case KEY.ANALOGUE_LEFT_JOYSTICK_HORIZONTAL: realCode = gp_axislh; break;
-		case KEY.ANALOGUE_LEFT_JOYSTICK_VERTICAL: realCode = gp_axislv; break;
-		case KEY.ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL: realCode = gp_axisrh; break;
-		case KEY.ANALOGUE_RIGHT_JOYSTICK_VERTICAL: realCode = gp_axisrv; break;
+		case KEY.LEFT_TRIGGER: realCode = gp_shoulderlb; break;
+		case KEY.RIGHT_TRIGGER: realCode = gp_shoulderrb; break;
 		
-		// DIRECTIONAL INPUT
-		case KEY.DIRECTION_LEFT_JOYSTICK: realCode = [gp_axislh, gp_axislv]; break;
-		case KEY.DIRECTION_RIGHT_JOYSTICK: realCode = [gp_axisrh, gp_axisrv]; break;
-		case KEY.DIRECTION_WASD: realCode = [ord("D"),ord("A"),ord("S"),ord("W")]; break;
-		case KEY.DIRECTION_IJKL: realCode = [ord("L"),ord("J"),ord("K"),ord("I")]; break;
-		case KEY.DIRECTION_ARROWS: realCode = [vk_right, vk_left, vk_down, vk_up]; break;
-		case KEY.DIRECTION_NUMPAD: realCode = [vk_numpad3, vk_numpad1, vk_numpad2, vk_numpad5]; break;
-		case KEY.DIRECTION_PAD: realCode = [gp_padr, gp_padl, gp_padd, gp_padu]; break;
-		case KEY.DIRECTION_FACES: realCode = [gp_face2, gp_face3, gp_face1, gp_face4]; break;
+		case KEY.LEFT_JOYSTICK_UP: realCode = gp_axislv; break;
+		case KEY.LEFT_JOYSTICK_DOWN: realCode = gp_axislv; break;
+		case KEY.LEFT_JOYSTICK_LEFT: realCode = gp_axislh; break;
+		case KEY.LEFT_JOYSTICK_RIGHT: realCode = gp_axislh; break;
+		case KEY.RIGHT_JOYSTICK_UP: realCode = gp_axisrv; break;
+		case KEY.RIGHT_JOYSTICK_DOWN: realCode = gp_axisrv; break;
+		case KEY.RIGHT_JOYSTICK_LEFT: realCode = gp_axisrh; break;
+		case KEY.RIGHT_JOYSTICK_RIGHT: realCode = gp_axisrh; break;
 	}
 		
 	return realCode;
@@ -1098,8 +951,6 @@ function KeyToString(key) {
 		case KEY.FACE4: str = "FACE4"; break;
 		case KEY.LEFT_SHOULDER: str = "LEFT_SHOULDER"; break;
 		case KEY.RIGHT_SHOULDER: str = "RIGHT_SHOULDER"; break;
-		case KEY.LEFT_TRIGGER: str = "LEFT_TRIGGER"; break;
-		case KEY.RIGHT_TRIGGER: str = "RIGHT_TRIGGER"; break;
 		case KEY.SELECT: str = "SELECT"; break;
 		case KEY.START: str = "START"; break;
 		case KEY.LEFT_JOYSTICK_CLICK: str = "LEFT_JOYSTICK_CLICK"; break;
@@ -1108,6 +959,11 @@ function KeyToString(key) {
 		case KEY.PAD_DOWN: str = "PAD_DOWN"; break;
 		case KEY.PAD_LEFT: str = "PAD_LEFT"; break;
 		case KEY.PAD_RIGHT: str = "PAD_RIGHT"; break;
+		
+		// ANALOGUE INPUT
+		case KEY.LEFT_TRIGGER: str = "LEFT_TRIGGER"; break;
+		case KEY.RIGHT_TRIGGER: str = "RIGHT_TRIGGER"; break;
+		
 		case KEY.LEFT_JOYSTICK_UP: str = "LEFT_JOYSTICK_UP"; break;
 		case KEY.LEFT_JOYSTICK_DOWN: str = "LEFT_JOYSTICK_DOWN"; break;
 		case KEY.LEFT_JOYSTICK_LEFT: str = "LEFT_JOYSTICK_LEFT"; break;
@@ -1116,24 +972,6 @@ function KeyToString(key) {
 		case KEY.RIGHT_JOYSTICK_DOWN: str = "RIGHT_JOYSTICK_DOWN"; break;
 		case KEY.RIGHT_JOYSTICK_LEFT: str = "RIGHT_JOYSTICK_LEFT"; break;
 		case KEY.RIGHT_JOYSTICK_RIGHT: str = "RIGHT_JOYSTICK_RIGHT"; break;
-		
-		// ANALOGUE INPUT
-		case KEY.ANALOGUE_LEFT_TRIGGER: str = "ANALOGUE_LEFT_TRIGGER"; break;
-		case KEY.ANALOGUE_RIGHT_TRIGGER: str = "ANALOGUE_RIGHT_TRIGGER"; break;
-		case KEY.ANALOGUE_LEFT_JOYSTICK_HORIZONTAL: str = "ANALOGUE_LEFT_JOYSTICK_HORIZONTAL"; break;
-		case KEY.ANALOGUE_LEFT_JOYSTICK_VERTICAL: str = "ANALOGUE_LEFT_JOYSTICK_VERTICAL"; break;
-		case KEY.ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL: str = "ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL"; break;
-		case KEY.ANALOGUE_RIGHT_JOYSTICK_VERTICAL: str = "ANALOGUE_RIGHT_JOYSTICK_VERTICAL"; break;
-		
-		// DIRECTIONAL INPUT
-		case KEY.DIRECTION_LEFT_JOYSTICK: str = "DIRECTION_LEFT_JOYSTICK"; break;
-		case KEY.DIRECTION_RIGHT_JOYSTICK: str = "DIRECTION_RIGHT_JOYSTICK"; break;
-		case KEY.DIRECTION_WASD: str = "DIRECTION_WASD"; break;
-		case KEY.DIRECTION_IJKL: str = "DIRECTION_IJKL"; break;
-		case KEY.DIRECTION_ARROWS: str = "DIRECTION_ARROWS"; break;
-		case KEY.DIRECTION_NUMPAD: str = "DIRECTION_NUMPAD"; break;
-		case KEY.DIRECTION_PAD: str = "DIRECTION_PAD"; break;
-		case KEY.DIRECTION_FACES: str = "DIRECTION_FACES"; break;
 	}
 		
 	return str;
@@ -1245,8 +1083,6 @@ function StringToKey(str) {
 		case "FACE4": return KEY.FACE4; break;
 		case "LEFT_SHOULDER": return KEY.LEFT_SHOULDER; break;
 		case "RIGHT_SHOULDER": return KEY.RIGHT_SHOULDER; break;
-		case "LEFT_TRIGGER": return KEY.LEFT_TRIGGER; break;
-		case "RIGHT_TRIGGER": return KEY.RIGHT_TRIGGER; break;
 		case "SELECT": return KEY.SELECT; break;
 		case "START": return KEY.START; break;
 		case "LEFT_JOYSTICK_CLICK": return KEY.LEFT_JOYSTICK_CLICK; break;
@@ -1255,6 +1091,11 @@ function StringToKey(str) {
 		case "PAD_DOWN": return KEY.PAD_DOWN; break;
 		case "PAD_LEFT": return KEY.PAD_LEFT; break;
 		case "PAD_RIGHT": return KEY.PAD_RIGHT; break;
+		
+		// ANALOGUE INPUT
+		case "LEFT_TRIGGER": return KEY.LEFT_TRIGGER; break;
+		case "RIGHT_TRIGGER": return KEY.RIGHT_TRIGGER; break;
+		
 		case "LEFT_JOYSTICK_UP": return KEY.LEFT_JOYSTICK_UP; break;
 		case "LEFT_JOYSTICK_DOWN": return KEY.LEFT_JOYSTICK_DOWN; break;
 		case "LEFT_JOYSTICK_LEFT": return KEY.LEFT_JOYSTICK_LEFT; break;
@@ -1263,24 +1104,6 @@ function StringToKey(str) {
 		case "RIGHT_JOYSTICK_DOWN": return KEY.RIGHT_JOYSTICK_DOWN; break;
 		case "RIGHT_JOYSTICK_LEFT": return KEY.RIGHT_JOYSTICK_LEFT; break;
 		case "RIGHT_JOYSTICK_RIGHT": return KEY.RIGHT_JOYSTICK_RIGHT; break;
-		
-		// ANALOGUE INPUT
-		case "ANALOGUE_LEFT_TRIGGER": return KEY.ANALOGUE_LEFT_TRIGGER; break;
-		case "ANALOGUE_RIGHT_TRIGGER": return KEY.ANALOGUE_RIGHT_TRIGGER; break;
-		case "LEFT_JOYSTICK_HORIZONTAL": return KEY.ANALOGUE_LEFT_JOYSTICK_HORIZONTAL; break;
-		case "LEFT_JOYSTICK_VERTICAL": return KEY.ANALOGUE_LEFT_JOYSTICK_VERTICAL; break;
-		case "RIGHT_JOYSTICK_HORIZONTAL": return KEY.ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL; break;
-		case "RIGHT_JOYSTICK_VERTICAL": return KEY.ANALOGUE_RIGHT_JOYSTICK_VERTICAL; break;
-		
-		// DIRECTIONAL INUT
-		case "DIRECTION_LEFT_JOYSTICK": return KEY.DIRECTION_LEFT_JOYSTICK; break;
-		case "DIRECTION_RIGHT_JOYSTICK": return KEY.DIRECTION_RIGHT_JOYSTICK; break;
-		case "DIRECTION_WASD": return KEY.DIRECTION_WASD; break;
-		case "DIRECTION_IJKL": return KEY.DIRECTION_IJKL; break;
-		case "DIRECTION_ARROWS": return KEY.DIRECTION_ARROWS; break;
-		case "DIRECTION_NUMPAD": return KEY.DIRECTION_NUMPAD; break;
-		case "DIRECTION_PAD": return KEY.DIRECTION_PAD; break;
-		case "DIRECTION_FACES": return KEY.DIRECTION_FACES; break;
 	}
 	return -1;
 }
@@ -1349,7 +1172,7 @@ function ValueInArray(array, value) {
 	return false;
 }
 
-function KeyboardGetKeyDiscrete() {
+function KeyboardGetKey() {
 	if ( keyboard_check(vk_anykey) ) {
 		if keyboard_check(ord("A")) return KEY.A;
 		if keyboard_check(ord("B")) return KEY.B;
@@ -1442,33 +1265,7 @@ function KeyboardGetKeyDiscrete() {
 	return -1;
 }
 
-function KeyboardGetKeyDirectional() {
-	if ( keyboard_check_pressed(vk_anykey) ) {
-		if keyboard_check(ord("W"))
-		|| keyboard_check(ord("A"))
-		|| keyboard_check(ord("S"))
-		|| keyboard_check(ord("D"))
-			return KEY.DIRECTION_WASD;
-		if keyboard_check(ord("I"))
-		|| keyboard_check(ord("J"))
-		|| keyboard_check(ord("K"))
-		|| keyboard_check(ord("L"))
-			return KEY.DIRECTION_IJKL;
-		if keyboard_check(vk_up)
-		|| keyboard_check(vk_down)
-		|| keyboard_check(vk_left)
-		|| keyboard_check(vk_right)
-			return KEY.DIRECTION_ARROWS;
-		if keyboard_check(vk_numpad1)
-		|| keyboard_check(vk_numpad2)
-		|| keyboard_check(vk_numpad3)
-		|| keyboard_check(vk_numpad5)
-			return KEY.DIRECTION_ARROWS;
-	}
-	return -1;
-}
-
-function GamepadGetKeyDiscrete() {
+function GamepadGetKey() {
 	var gp_num = gamepad_get_device_count();
 	for ( var dev=0 ; dev<gp_num ; dev++ ) {
 		if ( gamepad_is_connected(dev) ) {
@@ -1489,61 +1286,15 @@ function GamepadGetKeyDiscrete() {
 			if gamepad_button_check(dev, gp_padl) return [KEY.PAD_LEFT,dev];
 			if gamepad_button_check(dev, gp_padr) return [KEY.PAD_RIGHT,dev];
 			
-			if ( gamepad_axis_value(dev, gp_axislh) > JOYSTICK_THRESHOLD ) return [KEY.LEFT_JOYSTICK_RIGHT,dev];
-			if ( gamepad_axis_value(dev, gp_axislh) < -JOYSTICK_THRESHOLD ) return [KEY.LEFT_JOYSTICK_RIGHT,dev];
-			if ( gamepad_axis_value(dev, gp_axislv) > JOYSTICK_THRESHOLD ) return [KEY.LEFT_JOYSTICK_DOWN,dev];
-			if ( gamepad_axis_value(dev, gp_axislv) < -JOYSTICK_THRESHOLD ) return [KEY.LEFT_JOYSTICK_UP,dev];
+			if ( gamepad_axis_value(dev, gp_axislh) > ANALOGUE_THRESHOLD ) return [KEY.LEFT_JOYSTICK_RIGHT,dev];
+			if ( gamepad_axis_value(dev, gp_axislh) < -ANALOGUE_THRESHOLD ) return [KEY.LEFT_JOYSTICK_RIGHT,dev];
+			if ( gamepad_axis_value(dev, gp_axislv) > ANALOGUE_THRESHOLD ) return [KEY.LEFT_JOYSTICK_DOWN,dev];
+			if ( gamepad_axis_value(dev, gp_axislv) < -ANALOGUE_THRESHOLD ) return [KEY.LEFT_JOYSTICK_UP,dev];
 			
-			if ( gamepad_axis_value(dev, gp_axisrh) > JOYSTICK_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_RIGHT,dev];
-			if ( gamepad_axis_value(dev, gp_axisrh) < -JOYSTICK_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_RIGHT,dev];
-			if ( gamepad_axis_value(dev, gp_axisrv) > JOYSTICK_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_DOWN,dev];
-			if ( gamepad_axis_value(dev, gp_axisrv) < -JOYSTICK_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_UP,dev];
-		}
-	}
-	
-	return -1;
-}
-
-function GamepadGetKeyAnalogue() {
-	var gp_num = gamepad_get_device_count();
-	for ( var dev=0 ; dev<gp_num ; dev++ ) {
-		if ( gamepad_is_connected(dev) ) {
-			if ( gamepad_button_value(dev, gp_shoulderlb) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_LEFT_TRIGGER, dev];
-			if ( gamepad_button_value(dev, gp_shoulderrb) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_RIGHT_TRIGGER, dev];
-			
-			if ( abs(gamepad_axis_value(dev, gp_axislh)) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_LEFT_JOYSTICK_HORIZONTAL,dev];
-			if ( abs(gamepad_axis_value(dev, gp_axislv)) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_LEFT_JOYSTICK_VERTICAL,dev];
-			if ( abs(gamepad_axis_value(dev, gp_axisrh)) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_RIGHT_JOYSTICK_HORIZONTAL,dev];
-			if ( abs(gamepad_axis_value(dev, gp_axisrv)) > JOYSTICK_THRESHOLD ) return [KEY.ANALOGUE_RIGHT_JOYSTICK_VERTICAL,dev];
-		}
-	}
-	
-	return -1;
-}
-
-function GamepadGetKeyDirectional() {
-	var gp_num = gamepad_get_device_count();
-	for ( var dev=0 ; dev<gp_num ; dev++ ) {
-		if ( gamepad_is_connected(dev) ) {
-			var lh = gamepad_axis_value(dev, gp_axislh)
-			var lv = gamepad_axis_value(dev, gp_axislv)
-			var rh = gamepad_axis_value(dev, gp_axisrh)
-			var rv = gamepad_axis_value(dev, gp_axisrv)
-			
-			if ( point_distance(0, 0, lh, lv) > JOYSTICK_THRESHOLD ) return  [KEY.DIRECTION_LEFT_JOYSTICK, dev];
-			if ( point_distance(0, 0, rh, rv) > JOYSTICK_THRESHOLD ) return  [KEY.DIRECTION_RIGHT_JOYSTICK, dev];
-			
-			if gamepad_button_check(dev, gp_padu)
-			|| gamepad_button_check(dev, gp_padd)
-			|| gamepad_button_check(dev, gp_padr)
-			|| gamepad_button_check(dev, gp_padl)
-				return [KEY.DIRECTION_PAD, dev];
-			
-			if gamepad_button_check(dev, gp_face1)
-			|| gamepad_button_check(dev, gp_face2)
-			|| gamepad_button_check(dev, gp_face3)
-			|| gamepad_button_check(dev, gp_face4)
-				return [KEY.DIRECTION_FACES, dev];
+			if ( gamepad_axis_value(dev, gp_axisrh) > ANALOGUE_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_RIGHT,dev];
+			if ( gamepad_axis_value(dev, gp_axisrh) < -ANALOGUE_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_RIGHT,dev];
+			if ( gamepad_axis_value(dev, gp_axisrv) > ANALOGUE_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_DOWN,dev];
+			if ( gamepad_axis_value(dev, gp_axisrv) < -ANALOGUE_THRESHOLD ) return [KEY.RIGHT_JOYSTICK_UP,dev];
 		}
 	}
 	

@@ -12,7 +12,3 @@ drawfunc = function(input, key, i, j, selected, listening) {
         }
     }
 }
-
-menu_open = false;
-x = room_width/2;
-y = room_height/2;
