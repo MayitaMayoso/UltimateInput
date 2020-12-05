@@ -1,2 +1,2 @@
+//Print(Input.CheckValue("LEFT", "GamerMode"), Input.CheckNormalized("LEFT", "GamerMode"))
 
-Print(Input.CheckValue("LEFT", "GamerMode"), Input.CheckNormalized("LEFT", "GamerMode"))

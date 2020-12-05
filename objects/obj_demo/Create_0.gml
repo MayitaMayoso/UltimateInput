@@ -1,3 +1,4 @@
+/*
 Input.Print();
 
 drawfunc = function(input, key, i, j, selected, listening) {
@@ -12,3 +13,4 @@ drawfunc = function(input, key, i, j, selected, listening) {
         }
     }
 }
+*/
