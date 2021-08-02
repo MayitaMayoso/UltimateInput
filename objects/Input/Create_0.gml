@@ -1,4 +1,3 @@
-
 #region INPUT MANAGEMENT
 
     #macro ANALOGUE_THRESHOLD 0.9
@@ -1287,6 +1286,15 @@
 
     // If there is a previous configuration load it and skip all these steps
     //if (!Load()) exit;
+    
+    // Scene 1 inputs configuration
+    SetConfiguration("Scene1");
+    
+    AddInstance("TileDestroy");
+    AddInstance("NextScene");
+    
+    AddKey("TileDestroy", KEY.LEFT_CLICK);
+    AddKey("NextScene", KEY.SPACE);
         
     // Menu configuration
     SetConfiguration("Menu");
@@ -1306,24 +1314,6 @@
     AddKey("Accept", KEY.ENTER);
     AddKey("Cancel", KEY.ESCAPE);
     AddKey("MenuOpen", KEY.M);
-    
-    // GamerMode configuration
-    SetConfiguration("GamerMode");
-    
-    AddInstance("Up", 0.5);
-    AddInstance("Down");
-    AddInstance("Left");
-    AddInstance("Right");
-    
-    AddKey("Up", KEY.W);
-    AddKey("Down", KEY.S);
-    AddKey("Left", KEY.A);
-    AddKey("Right", KEY.D);
-    
-    AddKey("Up", KEY.LEFT_JOYSTICK_UP);
-    AddKey("Down", KEY.LEFT_JOYSTICK_DOWN);
-    AddKey("Left", KEY.LEFT_JOYSTICK_LEFT);
-    AddKey("Right", KEY.LEFT_JOYSTICK_RIGHT);
     
     // Save all the profiles
     Save();

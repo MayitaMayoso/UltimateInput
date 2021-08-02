@@ -68,8 +68,8 @@
     {"visible":true,"isLocked":false,"blendMode":0,"opacity":100.0,"displayName":"default","resourceVersion":"1.0","name":"784d730b-707d-49df-937d-7b1eb2afd9d7","tags":[],"resourceType":"GMImageLayer",},
   ],
   "parent": {
-    "name": "Input",
-    "path": "folders/Input.yy",
+    "name": "Ultimate Input",
+    "path": "folders/Ultimate Input.yy",
   },
   "resourceVersion": "1.0",
   "name": "spr_Input",
