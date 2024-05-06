@@ -1,4 +1,4 @@
-![Ultimate Input Logo](docs/src/media/UltimateInputLogo.png)
+![Ultimate Input Logo](images/UltimateInputLogo.png)
 ***
 ***Input Manager for GameMaker:***
 
