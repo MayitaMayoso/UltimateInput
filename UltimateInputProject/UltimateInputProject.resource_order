@@ -1,0 +1,13 @@
+{
+  "FolderOrderSettings":[
+    {"name":"UltimateInput by MayitaMayoso","order":2,"path":"folders/UltimateInput by MayitaMayoso.yy",},
+    {"name":"UltimateInput Using Example","order":3,"path":"folders/UltimateInput Using Example.yy",},
+  ],
+  "ResourceOrderSettings":[
+    {"name":"System","order":3,"path":"objects/System/System.yy",},
+    {"name":"TestObject","order":1,"path":"objects/TestObject/TestObject.yy",},
+    {"name":"ComponentParent","order":3,"path":"scripts/ComponentParent/ComponentParent.yy",},
+    {"name":"ConfigurationOfInputs","order":1,"path":"scripts/ConfigurationOfInputs/ConfigurationOfInputs.yy",},
+    {"name":"TestSprite","order":2,"path":"sprites/TestSprite/TestSprite.yy",},
+  ],
+}
