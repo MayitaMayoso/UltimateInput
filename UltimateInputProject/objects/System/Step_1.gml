@@ -4,3 +4,5 @@
 Input.StepBegin();
 
 if Input.CheckLongReleased("SwitchMode", "Default") game_end();
+
+//show_debug_message(Input);

@@ -146,7 +146,15 @@ function InputManager() : Component() constructor {
         		config.AddInstance(input, long_press_time, double_tap_time, repeated_time);
         };
         
-        static AddKey = function(input, key, device = 0) {
+        static AddKey = function(input, key, device = -1) {
+			if ( device == -1 ) {
+				for (var i = 0; i < gamepad_get_device_count(); i++) {
+					if (gamepad_is_connected(i)) {
+						device = i;
+						break;
+					}
+				}
+			}
         	var config = GetConfiguration(currentConfig);
         	if ( config != -1 )
         		config.AddKey(input, key, device);
@@ -352,7 +360,7 @@ function InputConfiguration(name) constructor {
 	};
 
 	static toString = function(tab="") {
-	    var str = tab + "Configuration " + self.name + "[\n";
+	    var str = tab + "Configuration " + self.name + " [\n";
 		for( var i = 0 ; i < array_length(self.instances) ; i++ ) {
 			str += tab + self.instances[i].toString(tab + "\t") + "\n";
 		}
@@ -506,10 +514,10 @@ function InputInstance(name, long_press_time, double_tap_time, repeated_time) co
 	};
 		
 	static toString = function(tab="") {
-		var str = tab + "Instance " + self.name + " (" + string(self.value) + ") [ ";
+		var str = tab + "Instance " + self.name + " (" + (self.value ? "true" : "false") + ") [ ";
 		
 		for(var i=0 ; i<array_length(self.keys); i++) {
-			str += self.keys[i].toString() + " ";
+			str += self.keys[i].toString() + (i<array_length(self.keys)-1 ? ", ": " ");
 		}
 		
 		str += "]"

@@ -36,7 +36,7 @@ this readme, this just consists on a blob moving around. Use the space key to sw
 Arrows movement. Take care of the following elements.
 
 - **System** (Object): This is your System/Controller/Game/Manager/Everything object that just uses its own events to
-  call the InputManager. This Object needs to create the InputManager, call StepBegin() and call DrawGuiEnd() of the
+  call the InputManager. This Object needs to create the InputManager, Load the Configuration, call StepBegin() and call DrawGuiEnd() of the
   Input in
   order to update the status of this.
 - **TestRoom** (Room): Not a lot to say about this asset. Just to make very clear that the System object has to be
@@ -72,7 +72,8 @@ if (Input.CheckPressed("Jump"))
 }
 ```
 
-Ultimate Input binds N keys into a string that is more related to what the code is doing.
+Ultimate Input binds N keys into a string that is more related to what the code is doing. This is what we call an
+InputInstance.
 
 ![Ultimate Input Logo](images/What's%20an%20Input.png)
 
@@ -97,4 +98,102 @@ following events for an input:
 - LongReleased: Like before you have to hold for a while before releasing. If you tap and release very fast it won't
   count.
 - RepeatedLong: Again a check with some Ms of buffer before it starts behaving like Repeated.
-- Value: For analog keys that can range between 0 and 1 (Gamepad sticks) this returns the value. 
+- Value: For analog keys that can range between 0 and 1 (Gamepad sticks) this returns the value.
+
+***
+
+***What are Configurations?***
+
+The term "Configuration" reffers to a collection of input instances under a name. For instance, you can have two
+configurations
+called "Keyboard" and "Gamepad". Either have the same inputs "Up", "Down", "Left" and "Right" but the keys binding will
+be different. Other example is having a configuration for Player1, another for Player2, etc... Coding the game will
+remain the same since you check for inputs related to your current configuration.
+
+***
+
+***InputManager General Structure***
+
+Finally, adding Keys, Input Instances and Configurations we have the InputManager of UltimateInput. When you print the
+InputManager (The toString() function is overloaded) you will see on the console something like this:
+
+```
+InputManager [
+	Configuration Default [
+			Instance SwitchMode (false) [ Key:SPACE ]
+	]
+	Configuration Player1 [
+			Instance Up (true) [ Key:W, Key:UP_ARROW ]
+			Instance Down (false) [ Key:S, Key:DOWN_ARROW ]
+			Instance Left (false) [ Key:A, Key:LEFT_ARROW ]
+			Instance Right (true) [ Key:D, Key:RIGHT_ARROW ]
+	]
+	Configuration Player2 [
+			Instance Up (false) [ Key:LEFT_JOYSTICK_UP, Key:PAD_UP ]
+			Instance Down (false) [ Key:LEFT_JOYSTICK_DOWN, Key:PAD_DOWN ]
+			Instance Left (false) [ Key:LEFT_JOYSTICK_LEFT, Key:PAD_LEFT ]
+			Instance Right (false) [ Key:LEFT_JOYSTICK_RIGHT, Key:PAD_RIGHT ]
+	]
+]
+```
+
+*Note: The bool next to the instance indicates if any of the associated keys is being pressed.*
+
+***
+
+***How do I configure my game Inputs***
+
+```c++
+function ConfigurationOfInputs(LoadFromDisk = false) {
+    // If there is a previous configuration load it and skip all these steps
+    if (LoadFromDisk && !Input.Load()) exit;
+
+    #region GAME CONTROLS
+        
+		// Default		
+        Input.AddConfiguration("Default");
+        Input.AddInstance("SwitchMode");
+		Input.AddKey("SwitchMode", KEY.SPACE);
+		
+        // Player 1
+        Input.AddConfiguration("Player1");
+    
+        Input.AddInstance("Up");
+        Input.AddInstance("Down");
+        Input.AddInstance("Left");
+        Input.AddInstance("Right");
+		
+		Input.AddKey("Up", KEY.W);
+		Input.AddKey("Down", KEY.S);
+		Input.AddKey("Left", KEY.A);
+		Input.AddKey("Right", KEY.D);		
+		
+		Input.AddKey("Up", KEY.UP_ARROW);
+		Input.AddKey("Down", KEY.DOWN_ARROW);
+	    Input.AddKey("Left", KEY.LEFT_ARROW);
+		Input.AddKey("Right", KEY.RIGHT_ARROW);
+		
+		// Player 2
+        Input.AddConfiguration("Player2");
+    
+        Input.AddInstance("Up");
+        Input.AddInstance("Down");
+        Input.AddInstance("Left");
+        Input.AddInstance("Right");
+		
+		Input.AddKey("Up", KEY.LEFT_JOYSTICK_UP, 4);
+		Input.AddKey("Down", KEY.LEFT_JOYSTICK_DOWN);
+		Input.AddKey("Left", KEY.LEFT_JOYSTICK_LEFT);
+		Input.AddKey("Right", KEY.LEFT_JOYSTICK_RIGHT);
+		
+		Input.AddKey("Up", KEY.PAD_UP);
+		Input.AddKey("Down", KEY.PAD_DOWN);
+		Input.AddKey("Left", KEY.PAD_LEFT);
+		Input.AddKey("Right", KEY.PAD_RIGHT);
+    
+    #endregion
+    
+    // Save all the profiles
+    Input.Save();
+}
+```

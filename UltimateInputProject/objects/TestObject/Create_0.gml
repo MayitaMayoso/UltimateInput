@@ -1,3 +1,3 @@
 // Setup for switching betweet two different input configurations
 currentInputConfig = false; // 0
-inputConfigurations = ["Keyboard1", "Keyboard2"];
+inputConfigurations = ["Player1", "Player2"];
