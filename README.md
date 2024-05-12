@@ -2,18 +2,31 @@
 
 # Input Manager for GameMaker
 
-Change all your keyboard_check(vk_up) and game
+With this asset you will be able to generalize the input checking in your game. Instead of hardcoding the keys in your game, call for an associated keyword defined by you.
+
+> From `keyboard_check(vk_up) || gamepad_button_check(gp_padu)` to `Input.Check("Up")`.
+
+Also this asset lets you group your inputs into profiles for different players or playmodes. Perfect for local multiplayer.
+
+> From `if (player == 0 && keyboard_check(vk_up) || player == 1 && gamepad_button_check(gp_padu))` to `Input.SetProfile(playerProfile); Input.Check("Jump");`
+
+This asset implements an extended series of input check types such as _Double Press_, _Repeated Press_ and _Long Press_.
+
+Using this manager you will be able to add to your game keys redefinitions without complicating your code anymore.
 
 ## Table of Contents
+
 1. [What does it do?](#what-does-it-do)
-    - [Input types](#input-types)
-    - [What are profiles?](#what-are-profiles)
-    - [InputManager general structure](#inputmanager-general-structure)
+   - [Input types](#input-types)
+   - [What are profiles?](#what-are-profiles)
+   - [InputManager general structure](#inputmanager-general-structure)
 2. [Using UltimateInput](#using-ultimate-input)
-    - [Getting the Asset](#getting-the-asset)
-    - [Asset overview](#asset-overview)
-    - [How do I configure my game inputs?](#how-do-i-configure-my-game-inputs)
-    - [Setup the InputManager in your project](#setup-the-inputmanager-in-your-project)
+   - [Getting the Asset](#getting-the-asset)
+   - [Asset overview](#asset-overview)
+   - [Setup the InputManager in your project](#setup-the-inputmanager-in-your-project)
+   - [How do I configure my game inputs?](#how-do-i-configure-my-game-inputs)
+3. [Credits](#credits)
+4. [License](#license)
 
 # What does it do?
 
@@ -112,8 +125,6 @@ You can either get the package (.yymps) and import it on your project dragging t
 **_Tools > Import Local Package_**) or importing the whole project (.yyz) with **_Import_** on the Start Page of game
 maker.
 
-
-
 ## Asset Overview
 
 Once you find yourself with a project with the Ultimate Input Asset you will see two folders: **UltimateInput by MayitaMayoso ** and **UltimateInput Using Example**.
@@ -141,6 +152,39 @@ Arrows movement. Take care of the following elements.
   created before any other object that you might want to use the Inputs with.
 - **TestObject and TestSprite** (Object, Sprite): The blob that moves around. Press space to change which keys are used
   to control it.
+
+## Setup the InputManager in your project
+
+As you can see on the System object from the example I give you, in order to work, the InputManager needs you to the following:
+
+### A create event where you instantiate the struct and define the macro **_Input_**.
+
+```c
+// Create an instance of the input manager
+inputManager = new InputManager();
+
+// Bind the input manager to a macro so we can avoid calling System making it less verbose
+#macro Input System.inputManager
+```
+
+### A begin step event to update the inputs
+
+```c
+// Update the input manager
+// This call has to be on begin step in order to be updated before anything else.
+// Also be sure to create this System object before any other object so this is called always first.
+Input.StepBegin();
+```
+
+### A draw GUI end event to update some globals
+
+```c
+// This event is executed on DrawGuiEnd Event so we make sure it happens after every other object logic.
+Input.DrawGUIEnd();
+```
+
+> **_NOTE:_** I prefer to implement InputManager as a struct instead of an object since it is part of a bigger collection of managers on my personal project and I assume it will probably be the same with you.
+
 
 ## How do I configure my game Inputs
 
@@ -210,34 +254,12 @@ From this code we can extract the following points:
 
 4. Define a Key with **_Input.AddKey("InstanceName", Key[, device=-1])_**. This will add to the defined instance a key (checkout the enum KEY at InputGlobals to see every supported key). The third parameter (which is optional) is device. The default value of this parameter is -1. This only affects when the key is a gamepad key. Since we can have up until 12 gamepads if my memory is no lying to me, you can specify which gamepad key from which of the available spots. Note that if the device is -1, it will search for the first enabled gamepad which I recommend.
 
-## Setup the InputManager in your project
+# Credits
 
-As you can see on the System object from the example I give you, in order to work, the InputManager needs you to the following:
+This project was built on a couple of weeks during summer 2019. Born heavily inspired by the Juju Adams first Input Manager (The one that came before the current [Input](https://github.com/offalynne/Input)).
 
-### A create event where you instantiate the struct and define the macro **_Input_**.
+If it took me two weeks to build the majority of the code for UltimateInput, it got me from 2019 to 2024 (🔥💯🗣) to battle up the laziness to write down a documentation and pack it up on a git repo.
 
-```c
-// Create an instance of the input manager
-inputManager = new InputManager();
+# Licensing
 
-// Bind the input manager to a macro so we can avoid calling System making it less verbose
-#macro Input System.inputManager
-```
-
-### A begin step event to update the inputs
-
-```c
-// Update the input manager
-// This call has to be on begin step in order to be updated before anything else.
-// Also be sure to create this System object before any other object so this is called always first.
-Input.StepBegin();
-```
-
-### A draw GUI end event to update some globals
-
-```c
-// This event is executed on DrawGuiEnd Event so we make sure it happens after every other object logic.
-Input.DrawGUIEnd();
-```
-
-> **_NOTE:_**  I prefer to implement InputManager as a struct instead of an object since it is part of a bigger collection of managers on my personal project and I assume it will probably be the same with you.
+This project is protected under the [MIT license](https://opensource.org/license/mit).
