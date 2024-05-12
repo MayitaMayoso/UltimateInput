@@ -1,0 +1,55 @@
+#macro ANALOGUE_THRESHOLD 0.1
+#macro LONG_PRESS_TIME 500
+#macro DOUBLE_TAP_TIME 300
+#macro REPEATED_TIME 100
+#macro FILE_NAME ("INPUT_CONFIGURATION.data")
+
+#macro mouse_x_previous global.mx_prev
+#macro mouse_y_previous global.my_prev
+#macro mouse_screen_x window_mouse_get_x()
+#macro mouse_screen_y window_mouse_get_y()
+#macro mouse_screen_x_previous global.mxs_prev
+#macro mouse_screen_y_previous global.mys_prev
+#macro keyboard_or_gamepad global.keyOrPad
+global.mx_prev = 0;
+global.my_prev = 0;
+global.mxs_prev = 0;
+global.mys_prev = 0;
+global.keyOrPad = 0;
+
+enum KEY {
+	// THE EMPTY KEY
+	EMPTY,
+	
+	// SPECIAL
+	ANY, NONE,
+	
+	// KEYBOARD
+	A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+	ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
+	LEFT_ARROW, RIGHT_ARROW, UP_ARROW, DOWN_ARROW,
+	ENTER, BACKSPACE, SPACE, TAB, ESCAPE,
+	HOME, END, DELETE, INSERT, PAGEUP, PAGEDOWN, PAUSE, PRINTSCREEN,
+	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+	NUMPAD0, NUMPAD1, NUMPAD2, NUMPAD3, NUMPAD4, NUMPAD5, NUMPAD6, NUMPAD7, NUMPAD8, NUMPAD9,
+	MULTIPLY, DIVIDE, ADD, SUBSTRACT, DECIMAL,
+	
+	// KEYBOARD DIRECT
+	SHIFT_LEFT, SHIFT_RIGHT, CONTROL_LEFT, CONTROL_RIGHT, ALT_LEFT, ALT_RIGHT,
+	
+	// MOUSE
+	LEFT_CLICK, RIGHT_CLICK, MIDDLE_CLICK, WHEEL_UP, WHEEL_DOWN,
+	MOUSE_UP, MOUSE_DOWN, MOUSE_LEFT, MOUSE_RIGHT,
+	
+	// GAMEPAD
+	FACE1, FACE2, FACE3, FACE4,
+	LEFT_SHOULDER, RIGHT_SHOULDER,
+	SELECT, START,
+	LEFT_JOYSTICK_CLICK, RIGHT_JOYSTICK_CLICK,
+	PAD_UP, PAD_DOWN, PAD_LEFT, PAD_RIGHT,
+	
+	// ANALOGUE
+	LEFT_TRIGGER, RIGHT_TRIGGER,
+	LEFT_JOYSTICK_DOWN, LEFT_JOYSTICK_RIGHT, RIGHT_JOYSTICK_DOWN, RIGHT_JOYSTICK_RIGHT,
+	LEFT_JOYSTICK_UP, LEFT_JOYSTICK_LEFT, RIGHT_JOYSTICK_UP, RIGHT_JOYSTICK_LEFT
+}
