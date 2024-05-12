@@ -573,6 +573,8 @@ function MouseGetKey() {
 };
 
 function GamepadAxisValue(device, axis) {
-    if ( abs(gamepad_axis_value(device, axis)) >= ANALOGUE_THRESHOLD ) return gamepad_axis_value(device, axis);
-    else return 0;
+    if ( abs(gamepad_axis_value(device, axis)) >= ANALOGUE_THRESHOLD )
+		return gamepad_axis_value(device, axis);
+    else
+		return 0;
 };
