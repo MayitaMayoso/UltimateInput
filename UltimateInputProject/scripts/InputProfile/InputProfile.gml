@@ -86,7 +86,7 @@ function InputProfile(name) constructor {
 	};
 
 	static toString = function(tab = "") {
-		var str = tab + "Configuration " + self.name + " [\n";
+		var str = tab + "Profile " + self.name + " [\n";
 		for (var i = 0; i < array_length(self.instances); i++) {
 			str += tab + self.instances[i].toString(tab + "\t") + "\n";
 		}

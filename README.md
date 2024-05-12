@@ -1,32 +1,33 @@
 ![Ultimate Input Logo](images/UltimateInputLogo.png)
-***
-***Input Manager for GameMaker:***
+
+# Input Manager for GameMaker
 
 Bind Actions with multiple Keys, Redefine your Inputs, and Multiplayer Support.
-***
 
-***Getting Started***
+## Getting Started
 
 You can download the latest release through the following link.
 
 - [Get the latest release](https://github.com/MayitaMayoso/UltimateInput/releases)
 
 You can either get the package (.yymps) and import it on your project dragging the file into the IDE or clicking at (
-***Tools > Import Local Package***) or importing the whole project (.yyz) with ***Import*** on the Start Page of game
+**_Tools > Import Local Package_**) or importing the whole project (.yyz) with **_Import_** on the Start Page of game
 maker.
 
-***
+## Asset Overview
 
-***Asset Overview***
-
-Once you find yourself with a project with the Ultimate Input Asset you will see two folders: *UltimateInput by
-MayitaMayoso* and *UltimateInput Using Example*.
+Once you find yourself with a project with the Ultimate Input Asset you will see two folders: **UltimateInput by MayitaMayoso ** and **UltimateInput Using Example**.
 
 The first folder contains the essentials to make Ultimate Input work in your project. If you know how to use the asset
 this is the only elements that you need to import.
 
-- **InputManager** (Script): Contains the InputManager struct, Macros and all the logic of UltimateInput.
-- **ConfigurationOfInputs** (Script): Here is where you define the keys that you will use in your game.
+- **InputManager** (Script): Contains the InputManager struct. It is the object that controls all the input. Contains a series of _InputProfiles_.
+  - **InputProfile** (Script): Contains the InputProfiles struct, a collection of _InputInstances_.
+  - **InputInstance** (Script): Contains the InputInstance struct, which represents an action in your game and stores a collection of associated _InputKeys_.
+  - **InputKey** (Script):
+- **InputConfiguration** (Script): Here is where you define the keys that you will use in your game.
+- **InputGlobals** (Script): InputGlobals holds the required macros, enums and global variables to manage UltimateInput.
+- **InputHelpers** (Script): A series of functions that are used to manage UltimateInput.
 - **ComponentParent** (Script): This asset is part of a bigger setup I use for my games where I have other managers such
   as CameraManager, TimeManager, GeometryManager, etc... Including this file is just for compatibility in case of
   publishing my other assets.
@@ -44,16 +45,14 @@ Arrows movement. Take care of the following elements.
 - **TestObject and TestSprite** (Object, Sprite): The blob that moves around. Press space to change which keys are used
   to control it.
 
-***
-
-***What does it do?***
+## What does it do?
 
 The main objective of this asset is to avoid hardcoding the keys used on your logic. Let's say your character can jump
-and it can happen with either W, Space or the Up Arrow. On regular gamemaker to check if the player wants the character
+and it can happen with either W, Space or the Up Arrow. On regular GameMaker to check if the player wants the character
 to jump we should do something like:
 
 ```c
-if (keyboad_check_pressed(ord("W")) || keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_space))
+if (keyboard_check_pressed(ord("W")) || keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_space))
 {
   Jump();
 }
@@ -77,11 +76,9 @@ InputInstance.
 
 ![Ultimate Input Logo](images/What's%20an%20Input.png)
 
-Apart from this, you have a series of extended ***input types***.
+Apart from this, you have a series of extended **_input types_**.
 
-***
-
-***Different Input Types***
+## Different Input Types
 
 Base gamemaker can check regular inputs, pressed inputs and released inputs. On Ultimate Input we can check the
 following events for an input:
@@ -100,35 +97,27 @@ following events for an input:
 - RepeatedLong: Again a check with some Ms of buffer before it starts behaving like Repeated.
 - Value: For analog keys that can range between 0 and 1 (Gamepad sticks) this returns the value.
 
-***
+## What are Profiles?
 
-***What are Configurations?***
+The term "Profile" refers to a collection of input instances under a name. As an example, you can have two Profiles called "Keyboard" and "Gamepad". Either have the same inputs "Up", "Down", "Left" and "Right" but the keys binding will be different. Other example is having a Profile for Player1, another for Player2, etc... Coding the game will remain the same since you check for inputs related to your current Profile.
 
-The term "Configuration" reffers to a collection of input instances under a name. For instance, you can have two
-configurations
-called "Keyboard" and "Gamepad". Either have the same inputs "Up", "Down", "Left" and "Right" but the keys binding will
-be different. Other example is having a configuration for Player1, another for Player2, etc... Coding the game will
-remain the same since you check for inputs related to your current configuration.
+## InputManager General Structure
 
-***
-
-***InputManager General Structure***
-
-Finally, adding Keys, Input Instances and Configurations we have the InputManager of UltimateInput. When you print the
+Finally, adding Keys, Instances and Profiles we have the InputManager of UltimateInput. When you print the
 InputManager (The toString() function is overloaded) you will see on the console something like this:
 
 ```
 InputManager [
-	Configuration Default [
+	Profile Default [
 			Instance SwitchMode (false) [ Key:SPACE ]
 	]
-	Configuration Player1 [
+	Profile Player1 [
 			Instance Up (true) [ Key:W, Key:UP_ARROW ]
 			Instance Down (false) [ Key:S, Key:DOWN_ARROW ]
 			Instance Left (false) [ Key:A, Key:LEFT_ARROW ]
 			Instance Right (true) [ Key:D, Key:RIGHT_ARROW ]
 	]
-	Configuration Player2 [
+	Profile Player2 [
 			Instance Up (false) [ Key:LEFT_JOYSTICK_UP, Key:PAD_UP ]
 			Instance Down (false) [ Key:LEFT_JOYSTICK_DOWN, Key:PAD_DOWN ]
 			Instance Left (false) [ Key:LEFT_JOYSTICK_LEFT, Key:PAD_LEFT ]
@@ -137,62 +126,56 @@ InputManager [
 ]
 ```
 
-*Note: The bool next to the instance indicates if any of the associated keys is being pressed.*
+_Note: The bool next to the instance indicates if any of the associated keys is being pressed._
 
-***
+## How do I configure my game Inputs
 
-***How do I configure my game Inputs***
-
-```c++
-function ConfigurationOfInputs(LoadFromDisk = false) {
+```c
+function InputConfiguration(LoadFromDisk = false) {
     // If there is a previous configuration load it and skip all these steps
     if (LoadFromDisk && !Input.Load()) exit;
 
-    #region GAME CONTROLS
-        
-		// Default		
-        Input.AddConfiguration("Default");
-        Input.AddInstance("SwitchMode");
-		Input.AddKey("SwitchMode", KEY.SPACE);
-		
-        // Player 1
-        Input.AddConfiguration("Player1");
-    
-        Input.AddInstance("Up");
-        Input.AddInstance("Down");
-        Input.AddInstance("Left");
-        Input.AddInstance("Right");
-		
-		Input.AddKey("Up", KEY.W);
-		Input.AddKey("Down", KEY.S);
-		Input.AddKey("Left", KEY.A);
-		Input.AddKey("Right", KEY.D);		
-		
-		Input.AddKey("Up", KEY.UP_ARROW);
-		Input.AddKey("Down", KEY.DOWN_ARROW);
-	    Input.AddKey("Left", KEY.LEFT_ARROW);
-		Input.AddKey("Right", KEY.RIGHT_ARROW);
-		
-		// Player 2
-        Input.AddConfiguration("Player2");
-    
-        Input.AddInstance("Up");
-        Input.AddInstance("Down");
-        Input.AddInstance("Left");
-        Input.AddInstance("Right");
-		
-		Input.AddKey("Up", KEY.LEFT_JOYSTICK_UP, 4);
-		Input.AddKey("Down", KEY.LEFT_JOYSTICK_DOWN);
-		Input.AddKey("Left", KEY.LEFT_JOYSTICK_LEFT);
-		Input.AddKey("Right", KEY.LEFT_JOYSTICK_RIGHT);
-		
-		Input.AddKey("Up", KEY.PAD_UP);
-		Input.AddKey("Down", KEY.PAD_DOWN);
-		Input.AddKey("Left", KEY.PAD_LEFT);
-		Input.AddKey("Right", KEY.PAD_RIGHT);
-    
-    #endregion
-    
+    // Default
+    Input.AddProfile("Default");
+    Input.AddInstance("SwitchMode");
+    Input.AddKey("SwitchMode", KEY.SPACE);
+
+    // Player 1
+    Input.AddProfile("Player1");
+
+    Input.AddInstance("Up");
+    Input.AddInstance("Down");
+    Input.AddInstance("Left");
+    Input.AddInstance("Right");
+
+    Input.AddKey("Up", KEY.W);
+    Input.AddKey("Down", KEY.S);
+    Input.AddKey("Left", KEY.A);
+    Input.AddKey("Right", KEY.D);
+
+    Input.AddKey("Up", KEY.UP_ARROW);
+    Input.AddKey("Down", KEY.DOWN_ARROW);
+    Input.AddKey("Left", KEY.LEFT_ARROW);
+    Input.AddKey("Right", KEY.RIGHT_ARROW);
+
+    // Player 2
+    Input.AddProfile("Player2");
+
+    Input.AddInstance("Up");
+    Input.AddInstance("Down");
+    Input.AddInstance("Left");
+    Input.AddInstance("Right");
+
+    Input.AddKey("Up", KEY.LEFT_JOYSTICK_UP, 4);
+    Input.AddKey("Down", KEY.LEFT_JOYSTICK_DOWN);
+    Input.AddKey("Left", KEY.LEFT_JOYSTICK_LEFT);
+    Input.AddKey("Right", KEY.LEFT_JOYSTICK_RIGHT);
+
+    Input.AddKey("Up", KEY.PAD_UP);
+    Input.AddKey("Down", KEY.PAD_DOWN);
+    Input.AddKey("Left", KEY.PAD_LEFT);
+    Input.AddKey("Right", KEY.PAD_RIGHT);
+
     // Save all the profiles
     Input.Save();
 }
