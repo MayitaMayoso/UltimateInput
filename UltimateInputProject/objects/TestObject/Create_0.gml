@@ -1,3 +1,3 @@
 // Setup for switching betweet two different input configurations
-currentInputConfig = false; // 0
-inputConfigurations = ["Player1", "Player2"];
+currentProfile = false;
+availableProfiles = ["Player1", "Player2"];

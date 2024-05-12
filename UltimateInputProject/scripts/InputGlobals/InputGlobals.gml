@@ -2,7 +2,7 @@
 #macro LONG_PRESS_TIME 500
 #macro DOUBLE_TAP_TIME 300
 #macro REPEATED_TIME 100
-#macro INPUT_CONFIGURATION_SAVE_FILE "INPUT_CONFIGURATION.data"
+#macro INPUT_CONFIGURATION_SAVE_FILE "InputConfiguration.data"
 
 #macro mouse_x_previous global.mx_prev
 #macro mouse_y_previous global.my_prev

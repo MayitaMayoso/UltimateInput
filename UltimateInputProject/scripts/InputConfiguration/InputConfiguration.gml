@@ -1,4 +1,7 @@
 function InputConfiguration(LoadFromDisk = false) {
+    // Delete the time source that has called this function
+    time_source_destroy(Input._InputConfigurationCallbackTimeSource);
+    
     // If there is a previous configuration load it and skip all these steps
     if (LoadFromDisk && !Input.Load()) exit;
     

@@ -1,14 +1,6 @@
 function InputManager() : Component() constructor {
-	profiles = [];
-	currentConfig = "";
-	listening = false;
-	keysReleased = false;
 
 	#region PRIVATE ATTRIBUTES AND METHODS TO MANAGE THE STRUCT
-
-	static Create = function() {
-		ConfigurationOfInputs();
-	};
 
 	static DrawGUIEnd = function() {
 		// Last checked input was keyboard or mouse
@@ -44,17 +36,17 @@ function InputManager() : Component() constructor {
 		}
 	};
 
-	static GetConfiguration = function(config) {
+	static GetProfile = function(profile) {
 		for (var i = 0; i < array_length(profiles); i++) {
-			if (profiles[i].name == config) {
+			if (profiles[i].name == profile) {
 				return profiles[i];
 			}
 		}
 		return -1;
 	};
 
-	static GetKeys = function(configuration) {
-		var newConf = GetConfiguration(configuration);
+	static GetKeys = function(profile) {
+		var newConf = GetProfile(profile);
 
 		if (newConf != -1) {
 			return newConf.GetKeys();
@@ -76,18 +68,18 @@ function InputManager() : Component() constructor {
 
 	#region MODIFIERS
 
-	static AddProfile = function(config) {
-		var newConf = GetConfiguration(config);
+	static AddProfile = function(profile) {
+		var newConf = GetProfile(profile);
 		if (newConf == -1) {
-			profiles[array_length(profiles)] = new InputProfile(config);
+			profiles[array_length(profiles)] = new InputProfile(profile);
 		}
-		currentConfig = config;
+		currentProfile = profile;
 	};
 
-	static SetProfile = function(config) {
-		var newConf = GetConfiguration(config);
+	static SetProfile = function(profile) {
+		var newConf = GetProfile(profile);
 		if (newConf != -1) {
-			currentConfig = config;
+			currentProfile = profile;
 		}
 	};
 
@@ -97,9 +89,9 @@ function InputManager() : Component() constructor {
 		double_tap_time = DOUBLE_TAP_TIME,
 		repeated_time = REPEATED_TIME
 	) {
-		var config = GetConfiguration(currentConfig);
-		if (config != -1) {
-			config.AddInstance(input, long_press_time, double_tap_time, repeated_time);
+		var profile = GetProfile(currentProfile);
+		if (profile != -1) {
+			profile.AddInstance(input, long_press_time, double_tap_time, repeated_time);
 		}
 	};
 
@@ -112,19 +104,19 @@ function InputManager() : Component() constructor {
 				}
 			}
 		}
-		var config = GetConfiguration(currentConfig);
-		if (config != -1) {
-			config.AddKey(input, key, device);
+		var profile = GetProfile(currentProfile);
+		if (profile != -1) {
+			profile.AddKey(input, key, device);
 		}
 	};
 
-	static DeleteConfiguration = function(input) {
+	static DeleteProfile = function(input) {
 		var len = array_length(profiles);
 		for (var i = 0; i < len; i++) {
-			var config = profiles[i];
-			if (config.name == input) {
-				config.FreeInstances();
-				delete config;
+			var profile = profiles[i];
+			if (profile.name == input) {
+				profile.FreeInstances();
+				delete profile;
 				for (var j = i + 1; j < len; j++) {
 					profiles[j - 1] = profiles[j];
 				}
@@ -134,9 +126,9 @@ function InputManager() : Component() constructor {
 		}
 	};
 
-	static DeleteAllConfigurations = function() {
+	static ClearProfiles = function() {
 		for (var i = array_length(profiles) - 1; i >= 0; i--) {
-			DeleteConfiguration(profiles[i].name);
+			DeleteProfile(profiles[i].name);
 		}
 	};
 
@@ -208,15 +200,15 @@ function InputManager() : Component() constructor {
 
 	#region CHECKERS
 
-	static _CheckGeneral = function(input, config, type) {
-		if (!is_array(config)) {
-			config = [config];
+	static _CheckGeneral = function(input, profile, type) {
+		if (!is_array(profile)) {
+			profile = [profile];
 		}
 
 		var inputVal = false;
 
-		for (var c = 0; c < array_length(config); c++) {
-			var newConf = GetConfiguration(config[c]);
+		for (var c = 0; c < array_length(profile); c++) {
+			var newConf = GetProfile(profile[c]);
 			if (newConf != -1) {
 				inputVal = max(inputVal, newConf.Check(input, type));
 			}
@@ -225,45 +217,53 @@ function InputManager() : Component() constructor {
 		return inputVal;
 	};
 
-	static Check = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "hold");
+	static Check = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "hold");
 	};
 
-	static CheckPressed = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "pressed");
+	static CheckPressed = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "pressed");
 	};
 
-	static CheckReleased = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "released");
+	static CheckReleased = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "released");
 	};
 
-	static CheckLong = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "long");
+	static CheckLong = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "long");
 	};
 
-	static CheckLongPressed = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "longpressed");
+	static CheckLongPressed = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "longpressed");
 	};
 
-	static CheckLongReleased = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "longreleased");
+	static CheckLongReleased = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "longreleased");
 	};
 
-	static CheckDouble = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "double");
+	static CheckDouble = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "double");
 	};
 
-	static CheckRepeated = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "repeated");
+	static CheckRepeated = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "repeated");
 	};
 
-	static CheckRepeatedLong = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "repeatedlong");
+	static CheckRepeatedLong = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "repeatedlong");
 	};
 
-	static CheckValue = function(input, config = currentConfig) {
-		return _CheckGeneral(input, config, "value");
+	static CheckValue = function(input, profile = currentProfile) {
+		return _CheckGeneral(input, profile, "value");
 	};
 
 	#endregion
+
+	profiles = [];
+	currentProfile = "Default";
+	listening = false;
+	keysReleased = false;
+	
+	_InputConfigurationCallbackTimeSource = time_source_create(time_source_game, 1, time_source_units_frames, InputConfiguration);
+	time_source_start(_InputConfigurationCallbackTimeSource);
 }

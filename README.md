@@ -2,50 +2,20 @@
 
 # Input Manager for GameMaker
 
-Bind Actions with multiple Keys, Redefine your Inputs, and Multiplayer Support.
+Change all your keyboard_check(vk_up) and game
 
-## Getting Started
+## Table of Contents
+1. [What does it do?](#what-does-it-do)
+    - [Input types](#input-types)
+    - [What are profiles?](#what-are-profiles)
+    - [InputManager general structure](#inputmanager-general-structure)
+2. [Using UltimateInput](#using-ultimate-input)
+    - [Getting the Asset](#getting-the-asset)
+    - [Asset overview](#asset-overview)
+    - [How do I configure my game inputs?](#how-do-i-configure-my-game-inputs)
+    - [Setup the InputManager in your project](#setup-the-inputmanager-in-your-project)
 
-You can download the latest release through the following link.
-
-- [Get the latest release](https://github.com/MayitaMayoso/UltimateInput/releases)
-
-You can either get the package (.yymps) and import it on your project dragging the file into the IDE or clicking at (
-**_Tools > Import Local Package_**) or importing the whole project (.yyz) with **_Import_** on the Start Page of game
-maker.
-
-## Asset Overview
-
-Once you find yourself with a project with the Ultimate Input Asset you will see two folders: **UltimateInput by MayitaMayoso ** and **UltimateInput Using Example**.
-
-The first folder contains the essentials to make Ultimate Input work in your project. If you know how to use the asset
-this is the only elements that you need to import.
-
-- **InputManager** (Script): Contains the InputManager struct. It is the object that controls all the input. Contains a series of _InputProfiles_.
-  - **InputProfile** (Script): Contains the InputProfiles struct, a collection of _InputInstances_.
-  - **InputInstance** (Script): Contains the InputInstance struct, which represents an action in your game and stores a collection of associated _InputKeys_.
-  - **InputKey** (Script):
-- **InputConfiguration** (Script): Here is where you define the keys that you will use in your game.
-- **InputGlobals** (Script): InputGlobals holds the required macros, enums and global variables to manage UltimateInput.
-- **InputHelpers** (Script): A series of functions that are used to manage UltimateInput.
-- **ComponentParent** (Script): This asset is part of a bigger setup I use for my games where I have other managers such
-  as CameraManager, TimeManager, GeometryManager, etc... Including this file is just for compatibility in case of
-  publishing my other assets.
-
-UltimateInput Using Example is a very basic game to show how to set up teh asset to make it work. At the day I'm writing
-this readme, this just consists on a blob moving around. Use the space key to switch between a WASD movement to an
-Arrows movement. Take care of the following elements.
-
-- **System** (Object): This is your System/Controller/Game/Manager/Everything object that just uses its own events to
-  call the InputManager. This Object needs to create the InputManager, Load the Configuration, call StepBegin() and call DrawGuiEnd() of the
-  Input in
-  order to update the status of this.
-- **TestRoom** (Room): Not a lot to say about this asset. Just to make very clear that the System object has to be
-  created before any other object that you might want to use the Inputs with.
-- **TestObject and TestSprite** (Object, Sprite): The blob that moves around. Press space to change which keys are used
-  to control it.
-
-## What does it do?
+# What does it do?
 
 The main objective of this asset is to avoid hardcoding the keys used on your logic. Let's say your character can jump
 and it can happen with either W, Space or the Up Arrow. On regular GameMaker to check if the player wants the character
@@ -78,7 +48,7 @@ InputInstance.
 
 Apart from this, you have a series of extended **_input types_**.
 
-## Different Input Types
+## Input Types
 
 Base gamemaker can check regular inputs, pressed inputs and released inputs. On Ultimate Input we can check the
 following events for an input:
@@ -126,12 +96,61 @@ InputManager [
 ]
 ```
 
-_Note: The bool next to the instance indicates if any of the associated keys is being pressed._
+> **_NOTE:_** The bool next to the instance indicates if any of the associated keys is being pressed.
+
+# Using Ultimate Input
+
+The next section will cover how to practically use UltimateInput. From setting up the InputConfiguration for your game to instantiating the manager on your controller object.
+
+## Getting the Asset
+
+You can download the latest release through the following link.
+
+- [Get the latest release](https://github.com/MayitaMayoso/UltimateInput/releases)
+
+You can either get the package (.yymps) and import it on your project dragging the file into the IDE or clicking at (
+**_Tools > Import Local Package_**) or importing the whole project (.yyz) with **_Import_** on the Start Page of game
+maker.
+
+
+
+## Asset Overview
+
+Once you find yourself with a project with the Ultimate Input Asset you will see two folders: **UltimateInput by MayitaMayoso ** and **UltimateInput Using Example**.
+
+The first folder contains the essentials to make Ultimate Input work in your project. If you know how to use the asset
+this is the only elements that you need to import.
+
+- **InputManager** (Script): Contains the InputManager struct. It is the object that controls all the input. Contains a series of _InputProfiles_.
+  - **InputProfile** (Script): Contains the InputProfiles struct, a collection of _InputInstances_.
+  - **InputInstance** (Script): Contains the InputInstance struct, which represents an action in your game and stores a collection of associated _InputKeys_.
+  - **InputKey** (Script):
+- **InputConfiguration** (Script): Here is where you define the keys that you will use in your game.
+- **InputGlobals** (Script): InputGlobals holds the required macros, enums and global variables to manage UltimateInput.
+- **InputHelpers** (Script): A series of functions that are used to manage UltimateInput.
+- **ComponentParent** (Script): This asset is part of a bigger setup I use for my games where I have other managers such
+  as CameraManager, TimeManager, GeometryManager, etc... Including this file is just for compatibility in case of
+  publishing my other assets.
+
+UltimateInput Using Example is a very basic game to show how to set up teh asset to make it work. At the day I'm writing
+this readme, this just consists on a blob moving around. Use the space key to switch between a WASD movement to an
+Arrows movement. Take care of the following elements.
+
+- **System** (Object): This is your System/Controller/Game/Manager/Everything object that just uses its own events to call the InputManager. This Object needs to create the InputManager, Load the Configuration, call StepBegin() and call DrawGuiEnd() of the Input in order to update the status of this.
+- **TestRoom** (Room): Not a lot to say about this asset. Just to make very clear that the System object has to be
+  created before any other object that you might want to use the Inputs with.
+- **TestObject and TestSprite** (Object, Sprite): The blob that moves around. Press space to change which keys are used
+  to control it.
 
 ## How do I configure my game Inputs
 
+This is the example that comes on the project on how to configure the inputs for your game.
+
 ```c
 function InputConfiguration(LoadFromDisk = false) {
+    // Delete the time source that has called this function
+    time_source_destroy(Input._InputConfigurationCallbackTimeSource);
+
     // If there is a previous configuration load it and skip all these steps
     if (LoadFromDisk && !Input.Load()) exit;
 
@@ -180,3 +199,45 @@ function InputConfiguration(LoadFromDisk = false) {
     Input.Save();
 }
 ```
+
+From this code we can extract the following points:
+
+1. First, the configuration is enclosed on the function **_InputConfiguration(bool)_** withing the script of the same name. This function takes a boolean value as an argument. This argument indicates if the configuration should be loaded from disk (The name of the file is stored on the macro **_INPUT_CONFIGURATION_SAVE_FILE_** by default "InputConfiguration.data" and it will be stored on the gamemakers save directory). Lastly at the end of the function we call the function Input.Save(), it will store the defined configuration on the previously named file. Note that if we DO load the configuration, the function will terminate just after the load and nothing else will be defined, be really careful with this
+
+2. Define a Profile with **_Input.Profile("ProfileName")_**. This step is not mandatory since the "Default" profile will always be created. If not given any other profile, every input will belong to here. When defining a profile under a string, every instance and key you create will be under this collection.
+
+3. Define an Instance with **_Input.AddInstance("InstanceName" [, long_press_time, double_tap_time, repeated_tap_time])_**. This function registers on the current profile an instance. The first parameter is the name of the instance. The three following parameters are optional and they define the behavior of the long press, the double press and the repeated press. The default value of these parameters can be defined on InputGlobals.
+
+4. Define a Key with **_Input.AddKey("InstanceName", Key[, device=-1])_**. This will add to the defined instance a key (checkout the enum KEY at InputGlobals to see every supported key). The third parameter (which is optional) is device. The default value of this parameter is -1. This only affects when the key is a gamepad key. Since we can have up until 12 gamepads if my memory is no lying to me, you can specify which gamepad key from which of the available spots. Note that if the device is -1, it will search for the first enabled gamepad which I recommend.
+
+## Setup the InputManager in your project
+
+As you can see on the System object from the example I give you, in order to work, the InputManager needs you to the following:
+
+### A create event where you instantiate the struct and define the macro **_Input_**.
+
+```c
+// Create an instance of the input manager
+inputManager = new InputManager();
+
+// Bind the input manager to a macro so we can avoid calling System making it less verbose
+#macro Input System.inputManager
+```
+
+### A begin step event to update the inputs
+
+```c
+// Update the input manager
+// This call has to be on begin step in order to be updated before anything else.
+// Also be sure to create this System object before any other object so this is called always first.
+Input.StepBegin();
+```
+
+### A draw GUI end event to update some globals
+
+```c
+// This event is executed on DrawGuiEnd Event so we make sure it happens after every other object logic.
+Input.DrawGUIEnd();
+```
+
+> **_NOTE:_**  I prefer to implement InputManager as a struct instead of an object since it is part of a bigger collection of managers on my personal project and I assume it will probably be the same with you.
