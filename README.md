@@ -196,4 +196,6 @@ function ConfigurationOfInputs(LoadFromDisk = false) {
     // Save all the profiles
     Input.Save();
 }
+
+Test
 ```
