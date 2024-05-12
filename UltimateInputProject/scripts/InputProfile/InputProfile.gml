@@ -1,4 +1,4 @@
-function InputConfiguration(name) constructor {
+function InputProfile(name) constructor {
 
 	// General variables
 	self.name = name;

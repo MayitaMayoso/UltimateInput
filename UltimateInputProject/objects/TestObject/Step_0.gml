@@ -1,6 +1,6 @@
 // Set the configuration you are using
 currentInputConfig = Input.CheckPressed("SwitchMode", "Default") ? !currentInputConfig : currentInputConfig;
-Input.SetConfiguration(inputConfigurations[currentInputConfig]);
+Input.SetProfile(inputConfigurations[currentInputConfig]);
 
 // Get the inputs
 var hdir = Input.Check("Right") - Input.Check("Left");

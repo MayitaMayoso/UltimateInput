@@ -1,9 +1,9 @@
 {
   "$GMScript":"",
-  "%Name":"ConfigurationOfInputs",
+  "%Name":"InputConfiguration",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"ConfigurationOfInputs",
+  "name":"InputConfiguration",
   "parent":{
     "name":"UltimateInput by MayitaMayoso",
     "path":"folders/UltimateInput by MayitaMayoso.yy",

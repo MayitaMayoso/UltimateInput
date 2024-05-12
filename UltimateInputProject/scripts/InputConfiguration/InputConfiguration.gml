@@ -1,16 +1,16 @@
-function ConfigurationOfInputs(LoadFromDisk = false) {
+function InputConfiguration(LoadFromDisk = false) {
     // If there is a previous configuration load it and skip all these steps
     if (LoadFromDisk && !Input.Load()) exit;
 
     #region GAME CONTROLS
         
 		// Default		
-        Input.AddConfiguration("Default");
+        Input.AddProfile("Default");
         Input.AddInstance("SwitchMode");
 		Input.AddKey("SwitchMode", KEY.SPACE);
 		
         // Player 1
-        Input.AddConfiguration("Player1");
+        Input.AddProfile("Player1");
     
         Input.AddInstance("Up");
         Input.AddInstance("Down");
@@ -28,7 +28,7 @@ function ConfigurationOfInputs(LoadFromDisk = false) {
 		Input.AddKey("Right", KEY.RIGHT_ARROW);
 		
 		// Player 2
-        Input.AddConfiguration("Player2");
+        Input.AddProfile("Player2");
     
         Input.AddInstance("Up");
         Input.AddInstance("Down");

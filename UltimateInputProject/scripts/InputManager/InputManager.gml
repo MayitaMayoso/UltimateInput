@@ -1,6 +1,6 @@
 function InputManager() : Component() constructor {
 
-    configurations = [];
+    profiles = [];
     currentConfig = "";
     listening = false;
     keysReleased = false;
@@ -32,14 +32,14 @@ function InputManager() : Component() constructor {
 		
         static StepBegin = function() {
         	// Update every input
-        	for (var i = 0; i < array_length(configurations); i++)
-        		configurations[i].Update();
+        	for (var i = 0; i < array_length(profiles); i++)
+        		profiles[i].Update();
         };
         
         static GetConfiguration= function(config) {
-        	for (var i = 0; i < array_length(configurations); i++) {
-        		if ( configurations[i].name == config ) {
-        			return configurations[i];
+        	for (var i = 0; i < array_length(profiles); i++) {
+        		if ( profiles[i].name == config ) {
+        			return profiles[i];
         		}
         	}
         	return -1;
@@ -55,8 +55,8 @@ function InputManager() : Component() constructor {
         
         static toString = function(tab="") {
             var str = tab + "InputManager [\n";
-        	for(var i=0;i<array_length(configurations);i++) {
-        		str += tab + configurations[i].toString(tab + "\t") + "\n";
+        	for(var i=0;i<array_length(profiles);i++) {
+        		str += tab + profiles[i].toString(tab + "\t") + "\n";
         	}
         	str += tab + "]";
         	
@@ -67,13 +67,13 @@ function InputManager() : Component() constructor {
  
     #region MODIFIERS
     
-        static AddConfiguration = function(config) {
+        static AddProfile = function(config) {
         	var newConf = GetConfiguration(config);
-        	if ( newConf == -1 ) configurations[array_length(configurations)] = new InputConfiguration(config);
+        	if ( newConf == -1 ) profiles[array_length(profiles)] = new InputProfile(config);
         	currentConfig = config;	
         }
     
-        static SetConfiguration = function(config) {
+        static SetProfile = function(config) {
         	var newConf = GetConfiguration(config);
         	if ( newConf != -1 ) {
 				currentConfig = config;
@@ -101,41 +101,41 @@ function InputManager() : Component() constructor {
         };
         	
         static DeleteConfiguration = function(input) {
-        	var len = array_length(configurations);
+        	var len = array_length(profiles);
         	for(var i=0;i<len;i++) {
-        		var config = configurations[i];
+        		var config = profiles[i];
         		if (config.name == input) {
         			config.FreeInstances();
         			delete config;
         			for(var j=i+1;j<len;j++) {
-        				configurations[j-1] = configurations[j];
+        				profiles[j-1] = profiles[j];
         			}
-        			array_resize(configurations, len-1);
+        			array_resize(profiles, len-1);
         			return;
         		}
         	}
         };
         	
         static DeleteAllConfigurations = function() {
-        	for( var i=array_length(configurations)-1 ; i>=0 ; i-- ) {
-        		DeleteConfiguration(configurations[i].name);
+        	for( var i=array_length(profiles)-1 ; i>=0 ; i-- ) {
+        		DeleteConfiguration(profiles[i].name);
         	}
         };
         
         static Save = function() {
-        	var file = file_text_open_write(FILE_NAME);
+        	var file = file_text_open_write(INPUT_CONFIGURATION_SAVE_FILE);
         	
-        	for(var i=0;i<array_length(configurations);i++) {
-        		configurations[i].Save(file);
+        	for(var i=0;i<array_length(profiles);i++) {
+        		profiles[i].Save(file);
         	}
         			
         	file_text_close(file);
         };
         
         static Load = function() {
-        	if ( !file_exists(FILE_NAME) ) return -1;
+        	if ( !file_exists(INPUT_CONFIGURATION_SAVE_FILE) ) return -1;
         	
-        	var file = file_text_open_read(FILE_NAME);
+        	var file = file_text_open_read(INPUT_CONFIGURATION_SAVE_FILE);
         		
         	while(!file_text_eof(file)) {
         		var line = StringSplit(file_text_read_string(file), ";");
@@ -144,7 +144,7 @@ function InputManager() : Component() constructor {
         		var lastInst;
         			
         		switch(line[0]) {
-        			case "c": SetConfiguration(line[1]); break;
+        			case "c": SetProfile(line[1]); break;
         			case "i": AddInstance(line[1], real(line[2]), real(line[3])); lastInst = line[1]; break;
         			case "k": AddKey(lastInst, StringToKey(line[1]), real(line[2])); break;
         		}
