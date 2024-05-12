@@ -3,6 +3,6 @@
 // Also be sure to create this System object before any other object so this is called always first.
 Input.StepBegin();
 
-if Input.CheckLongReleased("SwitchMode", "Default") game_end();
-
-//show_debug_message(Input);
+if (Input.CheckLongReleased("SwitchMode", "Default")) {
+	game_end();
+}
