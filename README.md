@@ -50,7 +50,7 @@ With UltimateInput the previous code would turn into just:
 ```c
 if (Input.CheckPressed("Jump"))
 {
-    Jump()
+  Jump();
 }
 ```
 
