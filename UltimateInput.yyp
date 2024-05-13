@@ -1,6 +1,6 @@
 {
   "$GMProject":"",
-  "%Name":"UltimateInputProject",
+  "%Name":"UltimateInput",
   "AudioGroups":[
     {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
   ],
@@ -19,7 +19,7 @@
   "MetaData":{
     "IDEVersion":"2024.4.0.137",
   },
-  "name":"UltimateInputProject",
+  "name":"UltimateInput",
   "resources":[
     {"id":{"name":"System","path":"objects/System/System.yy",},},
     {"id":{"name":"TestObject","path":"objects/TestObject/TestObject.yy",},},
