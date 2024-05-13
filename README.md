@@ -262,4 +262,4 @@ If it took me two weeks to build the majority of the code for UltimateInput, it 
 
 # Licensing
 
-This project is protected under the [MIT license](https://opensource.org/license/mit).
+This project is protected under the [MIT license](LICENSE.md).
